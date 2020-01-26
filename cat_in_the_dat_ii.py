@@ -66,6 +66,8 @@ train = train.drop(['bin_3'], axis=1)
 test = test.drop(['bin_3'], axis=1)
 
 #%% Handling missing data
+train.loc[:, 'missing'] = train.isna().sum(axis=1)
+test.loc[:, 'missing'] = test.isna().sum(axis=1)
 train = train.fillna('-1').astype(str)
 test = test.fillna('-1').astype(str)
 
@@ -102,9 +104,9 @@ for train_index, test_index in skfolds.split(X_train, y_train):
     model.compile(loss='binary_crossentropy', optimizer='adam', metrics=[auc])
     
     early_stopping_cb = keras.callbacks.EarlyStopping(monitor='val_auc', min_delta=0.001, patience=5,
-                                       verbose=1, mode='max', baseline=None, restore_best_weights=True)
-    reduce_lr = keras.callbacks.ReduceLROnPlateau(monitor='val_auc', factor=0.5, patience=3,
-                                            min_lr=1e-6, mode='max', verbose=1)
+                                                      mode='max', baseline=None, restore_best_weights=True, verbose=1)
+    reduce_lr = keras.callbacks.ReduceLROnPlateau(monitor='val_auc', factor=0.5, patience=3, min_lr=1e-6,
+                                                  mode='max', verbose=1)
     model.fit(X_train_folds,
               y_train_folds.astype('float32'),
               validation_data=(X_test_fold, y_test_fold.astype('float32')),
@@ -112,7 +114,7 @@ for train_index, test_index in skfolds.split(X_train, y_train):
               batch_size=1024,
               callbacks=[early_stopping_cb, reduce_lr],
               epochs=100
-             )
+              )
     
     valid_fold_preds = model.predict(X_test_fold)
     test_fold_preds = model.predict(X_test)
