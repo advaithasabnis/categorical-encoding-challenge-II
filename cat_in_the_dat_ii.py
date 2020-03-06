@@ -58,8 +58,8 @@ def create_model(data):
 
 
 #%% Import data
-train = pd.read_csv('train.csv')
-test = pd.read_csv('test.csv')
+train = pd.read_csv('cat_in_the_dat_ii/train.csv')
+test = pd.read_csv('cat_in_the_dat_ii/test.csv')
 
 #%% Remove non-important features
 train = train.drop(['bin_3'], axis=1)
@@ -92,7 +92,7 @@ train_preds = np.zeros((len(train)))
 test_preds = np.zeros((len(test)))
 
 i = 1
-skfolds = StratifiedKFold(n_splits=50)
+skfolds = StratifiedKFold(n_splits=50, shuffle=True, random_state=42)
 for train_index, test_index in skfolds.split(X_train, y_train):
     X_train_folds, X_test_fold = X_train[train_index], X_train[test_index]
     y_train_folds, y_test_fold = y_train[train_index].values, y_train[test_index].values
@@ -127,9 +127,8 @@ for train_index, test_index in skfolds.split(X_train, y_train):
 print("Overall AUC={}".format(roc_auc_score(train.target.values, train_preds)))
 
 #%% Submission file
-
 test_preds /= skfolds.get_n_splits()
 dataPred = pd.DataFrame()
 dataPred['id'] = test['id'].copy()
 dataPred['target'] = test_preds
-dataPred.to_csv('submission.csv', index=False, header=True)
+dataPred.to_csv('cat_in_the_dat_ii/submission_2.csv', index=False, header=True)
